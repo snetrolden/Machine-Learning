@@ -1,6 +1,8 @@
 import numpy as np
 from h1_util import numerical_grad_check
 
+
+## IMPLEMENTED
 def logistic(z):
     """ 
     Helper function
@@ -14,6 +16,11 @@ def logistic(z):
     """
     logi = np.zeros(z.shape)
     ### YOUR CODE HERE
+
+    # Iterate over the size of z and apply the function to each element.
+    for i in range(len(z)):
+        logi[i] = 1/(1+np.exp(-z[i]))
+
     ### END CODE
     assert logi.shape == z.shape
     return logi
@@ -24,6 +31,7 @@ class LogisticRegressionClassifier():
     def __init__(self):
         self.w = None
 
+    ## NOT IMPLEMNETED TODO
     def cost_grad(self, X, y, w):
         """
         Compute the average negative log likelihood and gradient under the logistic regression model 
@@ -41,12 +49,14 @@ class LogisticRegressionClassifier():
         """
         cost = 0
         grad = np.zeros(w.shape)
+    
         ### YOUR CODE HERE
         ### END CODE
         assert grad.shape == w.shape
         return cost, grad
 
 
+    ## NOT IMPLEMENTED TODO
     def fit(self, X, y, w=None, lr=0.1, batch_size=16, epochs=10):
         """
         Run mini-batch stochastic Gradient Descent for logistic regression 
@@ -71,16 +81,19 @@ class LogisticRegressionClassifier():
         if w is None: w = np.zeros(X.shape[1])
         history = []        
         ### YOUR CODE HERE 
+        
+
         ### END CODE
         self.w = w
         self.history = history
 
 
+    ## NOT IMEPLEMTED TODO
     def predict(self, X):
         """ Classify each data element in X.
 
         Args:
-            X: np.array shape (n,d) dtype float - Features 
+            X: np.array shape (n,d) dtype float - Features   
         
         Returns: 
            p: numpy array shape (n, ) dtype int32, class predictions on X (-1, 1). NOTE: We want a class here, 
@@ -89,9 +102,14 @@ class LogisticRegressionClassifier():
         """
         out = np.ones(X.shape[0])
         ### YOUR CODE HERE
+        w = self.w
+        sigmoid = logistic(np.dot(X, w)) ## Helper function
+        out[sigmoid < 0.5] = -1
+        
         ### END CODE
         return out
-    
+
+    ## NOT IMPLEMENTED TODO
     def score(self, X, y):
         """ Compute model accuracy  on Data X with labels y
 
@@ -105,6 +123,8 @@ class LogisticRegressionClassifier():
         """
         s = 0
         ### YOUR CODE HERE
+        predictions = self.predict(X)
+        s = np.mean(predictions == y)
         ### END CODE
         return s
         
