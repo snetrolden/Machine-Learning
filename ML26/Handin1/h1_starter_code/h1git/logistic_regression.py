@@ -51,6 +51,18 @@ class LogisticRegressionClassifier():
         grad = np.zeros(w.shape)
     
         ### YOUR CODE HERE
+        n = X.shape[0]
+        # Margin: s_i = y_i * (x_i . w)
+        exponent = y * np.dot(X, w)
+        
+        # Average negative log-likelihood
+        # numpy has np.logaddexp(0, -s) that computes ln(1 + exp(-s)) with less overflow (numerical stability) #trust
+        cost = np.mean(np.logaddexp(0, -exponent))
+        
+        # Gradient:
+        # logistic(-exponent), let arg be negative, to get a positive output 
+        # transpose X to get correct dimensions
+        grad = -np.dot(X.T, y * logistic(-exponent))
         ### END CODE
         assert grad.shape == w.shape
         return cost, grad
@@ -81,8 +93,24 @@ class LogisticRegressionClassifier():
         if w is None: w = np.zeros(X.shape[1])
         history = []        
         ### YOUR CODE HERE 
-        
-
+        n = X.shape[0]
+        for epoch in range(epochs):
+            # Shuffle data before each epoch
+            indices = np.random.permutation(n)
+            X_shuffled = X[indices]
+            y_shuffled = y[indices]
+            
+            # Mini-batch gradient descent thing
+            for i in range(0, n, batch_size):
+                X_batch = X_shuffled[i : i + batch_size]
+                y_batch = y_shuffled[i : i + batch_size]
+                _, grad = self.cost_grad(X_batch, y_batch, w) # not interested in the cost here
+                w = w - lr * grad
+            
+            # remember cost for each epoch
+            epoch_cost, _ = self.cost_grad(X, y, w) # cost here
+            history.append(epoch_cost)
+            print(f"Epoch {epoch + 1}/{epochs} - Cost: {epoch_cost:.4f}") #check status after each epoch
         ### END CODE
         self.w = w
         self.history = history
@@ -102,10 +130,9 @@ class LogisticRegressionClassifier():
         """
         out = np.ones(X.shape[0])
         ### YOUR CODE HERE
-        w = self.w
-        sigmoid = logistic(np.dot(X, w)) ## Helper function
-        out[sigmoid < 0.5] = -1
-        
+        w = self.w 
+        sigmoid = logistic(np.dot(X, w)) ## Helper function to compress value into a probability between 0 and 1
+        out[sigmoid < 0.5] = -1 # everyhting under 0.5 after the sigmoid func is classified as -1 and everything else 1
         ### END CODE
         return out
 
@@ -123,8 +150,8 @@ class LogisticRegressionClassifier():
         """
         s = 0
         ### YOUR CODE HERE
-        predictions = self.predict(X)
-        s = np.mean(predictions == y)
+        # get predictions and compare with true labels to compute accuracy
+        s = np.mean(self.predict(X) == y)
         ### END CODE
         return s
         

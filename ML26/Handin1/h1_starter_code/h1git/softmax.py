@@ -24,6 +24,11 @@ def softmax(X):
     """
     res = np.zeros(X.shape)
     ### YOUR CODE HERE
+    # Loop this? check if numpy does it already numpy = magic
+    max_x = np.amax(X, axis=1, keepdims=True)
+    logsum = np.log(np.sum(np.exp(X - max_x), axis=1, keepdims=True)) + max_x
+    log_sm = X - logsum
+    res = np.exp(log_sm)
     ### END CODE
     return res
 
@@ -63,6 +68,14 @@ class SoftmaxClassifier():
         grad = np.zeros(W.shape)*np.nan
         Yk = one_in_k_encoding(y, self.num_classes) # may help - otherwise you may remove it
         ### YOUR CODE HERE
+        n = X.shape[0]
+        P = softmax(np.dot(X, W))
+        
+        # Average negative log-likelihood cost (Yk can be used)
+        cost = -np.sum(Yk * np.log(P)) / n 
+        
+        # Gradient 
+        grad = np.dot(X.T, P - Yk) / n
         ### END CODE
         return cost, grad
 
@@ -87,6 +100,22 @@ class SoftmaxClassifier():
         if W is None: W = np.zeros((X.shape[1], self.num_classes))
         history = []
         ### YOUR CODE HERE
+        # Same procedure as in LogisticRegClassifier
+        n = X.shape[0]
+        for epoch in range(epochs):
+            indices = np.random.permutation(n)
+            X_shuffled = X[indices]
+            Y_shuffled = Y[indices]
+            
+            for i in range(0, n, batch_size):
+                X_batch = X_shuffled[i : i + batch_size]
+                Y_batch = Y_shuffled[i : i + batch_size]
+                _, grad = self.cost_grad(X_batch, Y_batch, W)
+                W = W - lr * grad
+                
+            epoch_cost, _ = self.cost_grad(X, Y, W)
+            history.append(epoch_cost)
+            print(f"Epoch {epoch + 1}/{epochs} - Cost: {epoch_cost:.4f}")
         ### END CODE
         self.W = W
         self.history = history
@@ -103,6 +132,7 @@ class SoftmaxClassifier():
         """
         out = 0
         ### YOUR CODE HERE
+        out = np.mean(self.predict(X) == Y)
         ### END CODE
         return out
 
@@ -115,7 +145,8 @@ class SoftmaxClassifier():
            out: np.array shape (n, ) - prediction on each data point (number in 0,1,..., num_classes-1)
         """
         out = None
-        ### YOUR CODE HERE   
+        ### YOUR CODE HERE
+        out = np.argmax(np.dot(X, self.W), axis=1)
         ### END CODE
         return out
 
