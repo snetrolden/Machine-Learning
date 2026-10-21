@@ -62,13 +62,12 @@ class LogisticRegressionClassifier():
         # Gradient:
         # logistic(-exponent), let arg be negative, to get a positive output 
         # transpose X to get correct dimensions
-        grad = -np.dot(X.T, y * logistic(-exponent))
+        grad = -np.dot(X.T, y * logistic(-exponent)) / n
         ### END CODE
         assert grad.shape == w.shape
         return cost, grad
 
 
-    ## NOT IMPLEMENTED TODO
     def fit(self, X, y, w=None, lr=0.1, batch_size=16, epochs=10):
         """
         Run mini-batch stochastic Gradient Descent for logistic regression 
@@ -116,7 +115,7 @@ class LogisticRegressionClassifier():
         self.history = history
 
 
-    ## NOT IMEPLEMTED TODO
+    
     def predict(self, X):
         """ Classify each data element in X.
 
