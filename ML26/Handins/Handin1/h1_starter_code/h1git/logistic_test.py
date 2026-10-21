@@ -4,8 +4,8 @@ import pandas as pd
 import os
 import urllib
 from sklearn.model_selection import train_test_split
-from logistic_regression import LogisticRegressionClassifier
-from h1_util import print_score, export_fig
+from ML26.Handins.Handin1.h1_starter_code.h1git.logistic_regression import LogisticRegressionClassifier
+from ML26.Handins.Handin1.h1_starter_code.h1git.h1_util import print_score, export_fig
 import matplotlib.pyplot as plt
 from argparse import ArgumentParser
 

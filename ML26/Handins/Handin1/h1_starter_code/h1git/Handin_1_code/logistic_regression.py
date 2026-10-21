@@ -1,5 +1,5 @@
 import numpy as np
-from h1_util import numerical_grad_check
+from ML26.Handins.Handin1.h1_starter_code.h1git.h1_util import numerical_grad_check
 
 
 ## IMPLEMENTED

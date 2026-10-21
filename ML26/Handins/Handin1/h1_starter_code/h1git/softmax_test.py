@@ -5,8 +5,8 @@ from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
-from softmax import SoftmaxClassifier
-from h1_util import export_fig, print_score, load_digits_train_data, load_digits_test_data
+from ML26.Handins.Handin1.h1_starter_code.h1git.softmax import SoftmaxClassifier
+from ML26.Handins.Handin1.h1_starter_code.h1git.h1_util import export_fig, print_score, load_digits_train_data, load_digits_test_data
 from argparse import ArgumentParser
 
 
