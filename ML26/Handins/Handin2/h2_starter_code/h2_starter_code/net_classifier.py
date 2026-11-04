@@ -38,6 +38,10 @@ def softmax(X):
     """
     res = np.zeros(X.shape)
     ### YOUR CODE HERE
+    max_x = np.amax(X, axis=1, keepdims=True)
+    logsum = np.log(np.sum(np.exp(X - max_x), axis=1, keepdims=True)) + max_x
+    log_sm = X - logsum
+    res = np.exp(log_sm)
     ### END CODE
     return res
 
@@ -51,6 +55,7 @@ def relu(x):
         Beware of np.max and look at np.maximum
     """
     ### YOUR CODE HERE
+    res = np.maximum(0,x)
     ### END CODE
     return res
 
