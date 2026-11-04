@@ -101,6 +101,15 @@ class NetClassifier():
             params = self.params
         pred = None
         ### YOUR CODE HERE
+        W1 = params['W1'] 
+        b1 = params['b1'] 
+        W2 = params['W2'] 
+        b2 = params['b2'] 
+        Z1 = X @ W1 + b1
+        a1 = relu(Z1)
+        Z2 = a1 @ W2 + b2
+        #sigmoid activation from geeksforgeeks
+        pred = 1 / (1 + np.exp(-Z2))
         ### END CODE
         return pred
      
