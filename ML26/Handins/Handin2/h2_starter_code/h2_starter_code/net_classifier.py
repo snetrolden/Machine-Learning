@@ -25,7 +25,7 @@ def softmax(X):
     
     For each row x do:
     compute max of x
-    compute the log of the denominator sum for softmax but subtracting out the max i.e (log sum exp x-max) + max
+    compute the log of the denominator sum for softmax but subtracting out the max i.e (log sum exp x-max) + maxlog
     compute log of the softmax: x - logsum
     exponentiate that
     
@@ -38,6 +38,10 @@ def softmax(X):
     """
     res = np.zeros(X.shape)
     ### YOUR CODE HERE
+    max_x = np.amax(X, axis=1, keepdims=True)
+    logsum = np.log(np.sum(np.exp(X - max_x), axis=1, keepdims=True)) + max_x
+    log_sm = X - logsum
+    res = np.exp(log_sm)
     ### END CODE
     return res
 
