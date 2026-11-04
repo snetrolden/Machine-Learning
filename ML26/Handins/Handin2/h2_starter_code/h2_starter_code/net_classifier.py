@@ -119,6 +119,7 @@ class NetClassifier():
             params = self.params
         acc = None
         ### YOUR CODE HERE
+        acc = np.mean(self.predict(X, params) == y)
         ### END CODE
         return acc
     
