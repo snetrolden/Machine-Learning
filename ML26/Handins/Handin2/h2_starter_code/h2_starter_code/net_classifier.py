@@ -55,6 +55,7 @@ def relu(x):
         Beware of np.max and look at np.maximum
     """
     ### YOUR CODE HERE
+    res = np.maximum(0,x)
     ### END CODE
     return res
 
