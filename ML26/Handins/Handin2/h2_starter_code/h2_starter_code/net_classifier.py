@@ -108,6 +108,7 @@ class NetClassifier():
         Z1 = X @ W1 + b1
         a1 = relu(Z1)
         Z2 = a1 @ W2 + b2
+        # Maybe uae Softmax on Z2 instead?
         #sigmoid activation from geeksforgeeks
         pred = 1 / (1 + np.exp(-Z2))
         ### END CODE
