@@ -105,12 +105,12 @@ class NetClassifier():
         b1 = params['b1'] 
         W2 = params['W2'] 
         b2 = params['b2'] 
+
         Z1 = X @ W1 + b1
         a1 = relu(Z1)
         Z2 = a1 @ W2 + b2
-        # Maybe uae Softmax on Z2 instead?
-        #sigmoid activation from geeksforgeeks
-        pred = 1 / (1 + np.exp(-Z2))
+
+        pred = np.argmax(Z2, axis=1)
         ### END CODE
         return pred
      
@@ -129,6 +129,7 @@ class NetClassifier():
             params = self.params
         acc = None
         ### YOUR CODE HERE
+        # accuracy = (1/n) * sum_i [h(x_i) == y_i]   (1 - mean 0-1 loss)
         acc = np.mean(self.predict(X, params) == y)
         ### END CODE
         return acc
@@ -169,9 +170,42 @@ class NetClassifier():
         labels = one_in_k_encoding(y, W2.shape[1]) # shape n x k
                         
         ### YOUR CODE HERE - FORWARD PASS - compute cost with weight decay and store relevant values for backprop
+        n = X.shape[0]
+
+        # Layer 1: Z1 = X W1 + b1,  Relu
+        # Layer 2: Z2 = a1 W2 + b2, Softmax  
+        Z1 = X @ W1 + b1            # n x h
+        a1 = relu(Z1)               # n x h
+        Z2 = a1 @ W2 + b2           # n x k
+
+       
+        z_max = np.amax(Z2, axis=1, keepdims=True)
+        log_sum = z_max + np.log(np.sum(np.exp(Z2 - z_max), axis=1, keepdims=True))
+        log_probs = Z2 - log_sum    # n x k, ln softmax(Z2)
+        probs = np.exp(log_probs)   # n x k, softmax(Z2)
+
+        #Mean negative log likelihood
+        nll = -np.sum(labels * log_probs) / n
+
+        #Weight decay, biases NOT included
+        decay = c * (np.sum(W1 ** 2) + np.sum(W2 ** 2))
+        cost = nll + decay
         ### END CODE
-        
+
         ### YOUR CODE HERE - BACKWARDS PASS - compute derivatives of all weights and bias, store them in d_w1, d_w2, d_b1, d_b2
+    
+        d_z2 = (probs - labels) / n                 # n x k
+        d_w2 = a1.T @ d_z2 + 2 * c * W2             # h x k
+        d_b2 = np.sum(d_z2, axis=0, keepdims=True)  # 1 x k
+        d_a1 = d_z2 @ W2.T                          # n x h
+
+        # RelU
+        d_z1 = d_a1 * (Z1 > 0)                      # n x h
+
+
+
+        d_w1 = X.T @ d_z1 + 2 * c * W1              # d x h
+        d_b1 = np.sum(d_z1, axis=0, keepdims=True)  # 1 x h
         ### END CODE
         # the return signature
         return cost, {'d_w1': d_w1, 'd_w2': d_w2, 'd_b1': d_b1, 'd_b2': d_b2}
@@ -211,6 +245,58 @@ class NetClassifier():
 
         
         ### YOUR CODE HERE
+        # Copy for naming reasons
+        params = {'W1': W1.copy(), 'b1': b1.copy(), 'W2': W2.copy(), 'b2': b2.copy()}
+        n = X_train.shape[0]
+
+        train_loss = np.zeros(epochs)
+        train_acc = np.zeros(epochs)
+        val_loss = np.zeros(epochs)
+        val_acc = np.zeros(epochs)
+
+        best_val_acc = -1.0
+        best_params = None
+
+        # Mini-batch SGD
+        # See lecture 15 in folder (see comment in earlier commit)
+        #   while more time:
+        #     permute (x1,y1),...,(xn,yn) randomly
+        #     for each next batch of B items:  w = w - lr * grad of the batch loss
+        for epoch in range(epochs):
+            perm = np.random.permutation(n)
+            X_perm = X_train[perm]
+            y_perm = y_train[perm]
+            for start in range(0, n, batch_size):
+                X_batch = X_perm[start:start + batch_size]
+                y_batch = y_perm[start:start + batch_size]
+                _, grad = self.cost_grad(X_batch, y_batch, params, c=c)
+                # Gradient step w = w - lr * dw
+                params['W1'] -= lr * grad['d_w1']
+                params['b1'] -= lr * grad['d_b1']
+                params['W2'] -= lr * grad['d_w2']
+                params['b2'] -= lr * grad['d_b2']
+
+
+            
+            train_loss[epoch], _ = self.cost_grad(X_train, y_train, params, c=0.0)
+            val_loss[epoch], _ = self.cost_grad(X_val, y_val, params, c=0.0)
+            train_acc[epoch] = self.score(X_train, y_train, params)
+            val_acc[epoch] = self.score(X_val, y_val, params)
+
+            # safekeep the best. see Lecture 16 (they ar numbered in the folder)
+            
+            if val_acc[epoch] > best_val_acc:
+                best_val_acc = val_acc[epoch]
+                best_params = {key: value.copy() for key, value in params.items()}
+
+            # AI made print to help with ascetaining ressuklt.
+            print('epoch {0:3d}: train loss {1:.4f} acc {2:.4f} | val loss {3:.4f} acc {4:.4f}'.format(
+                epoch + 1, train_loss[epoch], train_acc[epoch], val_loss[epoch], val_acc[epoch]))
+
+        hist = {'train_loss': train_loss, 'train_acc': train_acc,
+                'val_loss': val_loss, 'val_acc': val_acc}
+        self.params = best_params
+        self.hist = hist
         ### END CODE
         # hist dict should look like this with something different than none
         #hist = {'train_loss': None, 'train_acc': None, 'val_loss': None, 'val_acc': None}
